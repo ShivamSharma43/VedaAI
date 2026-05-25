@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import toast from "react-hot-toast";
 
 export function useAssignmentSocket(assignmentId: string | null) {
-  const { setProgress, setStatus, setCurrent } = useAssignmentStore();
+  const { status, setProgress, setStatus, setCurrent } = useAssignmentStore();
 
   useEffect(() => {
     if (!assignmentId) return;
@@ -55,4 +55,38 @@ export function useAssignmentSocket(assignmentId: string | null) {
       socket.off("generation-failed", onFailed);
     };
   }, [assignmentId, setProgress, setStatus, setCurrent]);
+
+  // Fallback Polling (crucial for prod environments where sockets may drop or isolate workers)
+  useEffect(() => {
+    if (!assignmentId || status === "completed" || status === "failed") return;
+
+    const interval = setInterval(async () => {
+      try {
+        const { data } = await api.get(`/assignments/${assignmentId}`);
+        if (data.status === "completed") {
+          setStatus("completed");
+          setProgress(100);
+          setCurrent(data);
+          toast.success("Paper generated!");
+        } else if (data.status === "failed") {
+          setStatus("failed");
+          toast.error(data.error ?? "Generation failed");
+        } else if (data.jobId) {
+          // If still processing, poll the exact progress from the job queue
+          try {
+            const jobRes = await api.get(`/jobs/${data.jobId}/status`);
+            if (typeof jobRes.data.progress === "number") {
+              setProgress(jobRes.data.progress);
+            }
+          } catch (jobErr) {
+            console.error("Job polling error", jobErr);
+          }
+        }
+      } catch (err) {
+        console.error("Polling error", err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [assignmentId, status, setStatus, setProgress, setCurrent]);
 }
