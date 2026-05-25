@@ -3,6 +3,7 @@ import { redis } from "../lib/redis";
 import { Assignment } from "../models/Assignment";
 import { buildPrompt } from "../services/promptService";
 import { generatePaper } from "../services/aiService";
+import { generatePdfBuffer } from "../services/pdfService";
 import { emitToAssignment } from "../sockets";
 
 export function startGenerationWorker() {
@@ -36,6 +37,16 @@ export function startGenerationWorker() {
       emitToAssignment(assignmentId, "generation-progress", { progress: 90 });
 
       doc.generatedPaper = paper as any;
+      
+      // Generate and cache PDF while we're here (avoids 10-20s delay on download)
+      try {
+        const pdfBuffer = await generatePdfBuffer(doc.toObject());
+        doc.pdfBuffer = pdfBuffer;
+      } catch (pdfErr) {
+        console.error("PDF generation failed (non-blocking)", pdfErr);
+        // Don't fail the entire job; PDF can be generated on-demand if cached version fails
+      }
+
       doc.status = "completed";
       await doc.save();
 

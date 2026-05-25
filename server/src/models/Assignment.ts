@@ -50,6 +50,7 @@ const AssignmentSchema = new Schema(
       default: "pending",
     },
     generatedPaper: { type: PaperSchema, default: null },
+    pdfBuffer: { type: Buffer, default: null },
     jobId: String,
     error: String,
   },
