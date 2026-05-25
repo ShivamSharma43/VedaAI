@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque } from "next/font/google";
-<<<<<<< HEAD
+import { Bricolage_Grotesque, Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
-=======
->>>>>>> cb2ecc69bf17e798e640729b974b3c787b11865f
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-bricolage",
+});
+
+// Used by the generated question paper (PaperView) for a neutral document look.
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
@@ -25,12 +29,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${bricolage.variable} antialiased`}>
+      <body className={`${bricolage.variable} ${inter.variable} antialiased`}>
         {children}
-<<<<<<< HEAD
         <Toaster position="top-center" />
-=======
->>>>>>> cb2ecc69bf17e798e640729b974b3c787b11865f
       </body>
     </html>
   );

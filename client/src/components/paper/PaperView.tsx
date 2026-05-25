@@ -1,51 +1,82 @@
 "use client";
+
 import { Assignment } from "@/types";
-import { DifficultyBadge } from "../common/DifficultyBadge";
+
+/* Pulled from the institution profile in the design; constant for now. */
+const SCHOOL_NAME = "Delhi Public School, Sector-4, Bokaro";
+
+const DIFFICULTY_LABEL: Record<string, string> = {
+  easy: "Easy",
+  medium: "Moderate",
+  hard: "Challenging",
+};
 
 export function PaperView({ a }: { a: Assignment }) {
-  if (!a.generatedPaper) return null;
-  return (
-    <article className="card p-10 font-serif">
-      <header className="text-center border-b-4 border-double border-slate-800 pb-4">
-        <h1 className="text-3xl font-bold">{a.generatedPaper.title}</h1>
-        <p className="text-sm mt-1 text-slate-600">
-          {a.subject} · Total Marks: {a.config.totalMarks}
-        </p>
-      </header>
+  const paper = a.generatedPaper;
+  if (!paper) return null;
 
-      <div className="grid grid-cols-3 gap-4 my-6 text-sm">
-        <div className="border-b border-slate-400 pb-1">
-          Name: <span className="text-slate-400">__________________</span>
-        </div>
-        <div className="border-b border-slate-400 pb-1">
-          Roll No: <span className="text-slate-400">__________</span>
-        </div>
-        <div className="border-b border-slate-400 pb-1">
-          Section: <span className="text-slate-400">____</span>
-        </div>
+  const totalQuestions = paper.sections.reduce(
+    (n, s) => n + s.questions.length,
+    0
+  );
+
+  return (
+    <article
+      style={{ fontFamily: "var(--font-inter), sans-serif" }}
+      className="flex w-full flex-col items-center gap-[24px] rounded-[32px] bg-white p-[32px] text-[#303030]"
+    >
+      {/* ── HEADER ── */}
+      <div className="w-full text-center leading-[1.6]">
+        <h1 className="text-[32px] font-bold tracking-[-0.96px]">
+          {SCHOOL_NAME}
+        </h1>
+        <p className="text-[24px] font-semibold tracking-[-0.96px]">
+          Subject: {a.subject}
+        </p>
       </div>
 
-      {a.generatedPaper.sections.map((s, i) => (
-        <section key={i} className="mt-8">
-          <h2 className="text-xl font-bold border-b-2 border-slate-800 pb-1">
+      {/* ── TOTALS ── */}
+      <div className="flex w-full items-center justify-between text-[18px] font-semibold leading-[1.6] tracking-[-0.72px]">
+        <span>Total Questions: {totalQuestions}</span>
+        <span>Maximum Marks: {a.config.totalMarks}</span>
+      </div>
+
+      {/* ── GENERAL INSTRUCTION ── */}
+      <p className="w-full text-[18px] font-semibold leading-[1.6] tracking-[-0.72px]">
+        All questions are compulsory unless stated otherwise.
+      </p>
+
+      {/* ── STUDENT FIELDS ── */}
+      <div className="flex w-full flex-col text-[18px] font-semibold leading-[1.6] tracking-[-0.72px]">
+        <span>Name: ______________________</span>
+        <span>Roll Number: ________________</span>
+        <span>Class: ____ Section: __________</span>
+      </div>
+
+      {/* ── SECTIONS ── */}
+      {paper.sections.map((s, i) => (
+        <div key={i} className="flex w-full flex-col gap-[16px]">
+          <h2 className="text-center text-[24px] font-semibold leading-[1.6] tracking-[-0.96px]">
             {s.title}
           </h2>
-          <p className="italic text-slate-600 mt-1">{s.instruction}</p>
-          <ol className="list-decimal pl-6 mt-4 space-y-5">
+          {s.instruction && (
+            <p className="text-[16px] italic leading-[1.6]">{s.instruction}</p>
+          )}
+          <ol className="list-decimal space-y-[10px] pl-[24px] text-[16px] leading-[1.6]">
             {s.questions.map((q, j) => (
-              <li key={j}>
-                <p className="leading-relaxed">{q.text}</p>
-                <div className="flex items-center gap-3 mt-2 text-xs">
-                  <DifficultyBadge d={q.difficulty} />
-                  <span className="text-slate-500">
-                    [{q.marks} marks · {q.type}]
-                  </span>
-                </div>
+              <li key={j} className="pl-[4px]">
+                [{DIFFICULTY_LABEL[q.difficulty] ?? q.difficulty}] {q.text} [
+                {q.marks} {q.marks === 1 ? "Mark" : "Marks"}]
               </li>
             ))}
           </ol>
-        </section>
+        </div>
       ))}
+
+      {/* ── END ── */}
+      <p className="w-full text-[16px] font-bold leading-[1.6]">
+        End of Question Paper
+      </p>
     </article>
   );
 }

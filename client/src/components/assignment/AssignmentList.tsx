@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MoreVertical, Filter, Search, Plus } from "lucide-react";
+import { MoreVertical, Filter, Search, Plus, ArrowLeft } from "lucide-react";
 import type { Assignment } from "@/types";
 
 /* ISO date -> DD-MM-YYYY */
@@ -28,11 +28,11 @@ function AssignmentCard({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="relative flex min-h-[162px] flex-col justify-center rounded-[24px] bg-white p-[24px]">
-      <div className="flex flex-1 flex-col justify-between gap-[24px]">
+    <div className="relative flex min-h-[116px] flex-col rounded-[24px] bg-white p-[20px] lg:min-h-[162px] lg:p-[24px]">
+      <div className="flex flex-1 flex-col gap-[32px] lg:justify-between lg:gap-[24px]">
         {/* title + menu */}
         <div className="flex items-start justify-between gap-[12px]">
-          <h3 className="text-[24px] font-extrabold leading-[1.2] tracking-[-0.96px] text-[#303030]">
+          <h3 className="text-[18px] font-bold leading-[1.4] tracking-[-0.72px] text-[#303030] lg:text-[24px] lg:font-extrabold lg:leading-[1.2] lg:tracking-[-0.96px]">
             {a.title}
           </h3>
           <button
@@ -46,7 +46,7 @@ function AssignmentCard({
         </div>
 
         {/* assigned / due */}
-        <div className="flex items-center justify-between gap-[12px]">
+        <div className="flex items-center gap-[10px] lg:justify-between lg:gap-[12px]">
           <p className="whitespace-nowrap text-[16px] tracking-[-0.64px] text-black/50">
             <span className="font-extrabold text-[#303030]">Assigned on</span>
             {` : ${formatDate(a.createdAt)}`}
@@ -114,8 +114,23 @@ export function AssignmentList({
 
   return (
     <div className="w-full">
-      {/* HEADING */}
-      <div className="mb-[12px] flex items-start gap-[16px]">
+      {/* MOBILE HEADER — back + centered title */}
+      <div className="relative mb-[12px] flex h-[48px] w-full items-center lg:hidden">
+        <button
+          type="button"
+          aria-label="Back"
+          onClick={() => router.back()}
+          className="flex size-[48px] shrink-0 items-center justify-center rounded-full bg-white"
+        >
+          <ArrowLeft size={24} className="text-[#303030]" strokeWidth={2} />
+        </button>
+        <span className="absolute left-1/2 -translate-x-1/2 text-[16px] font-bold leading-[1.4] tracking-[-0.64px] text-[#303030]">
+          Assignments
+        </span>
+      </div>
+
+      {/* DESKTOP HEADING — green dot + title + subtitle */}
+      <div className="mb-[12px] hidden items-start gap-[16px] lg:flex">
         <span className="mt-[8px] size-[12px] shrink-0 rounded-full bg-[#22c55e]" />
         <div className="flex flex-col">
           <h2 className="text-[20px] font-bold leading-[1.4] tracking-[-0.8px] text-[#303030]">
@@ -128,20 +143,21 @@ export function AssignmentList({
       </div>
 
       {/* TOOLBAR */}
-      <div className="mb-[16px] flex h-[64px] items-center justify-between gap-[12px] rounded-[20px] bg-white px-[16px]">
+      <div className="mb-[16px] flex h-[64px] items-center justify-between gap-[12px] rounded-[16px] bg-white px-[16px] lg:rounded-[20px]">
         <button type="button" className="flex shrink-0 items-center gap-[4px]">
           <Filter size={20} className="text-[#a9a9a9]" strokeWidth={2} />
           <span className="text-[14px] font-bold tracking-[-0.56px] text-[#a9a9a9]">
-            Filter By
+            <span className="lg:hidden">Filter</span>
+            <span className="hidden lg:inline">Filter By</span>
           </span>
         </button>
 
-        <div className="flex h-[44px] w-full max-w-[380px] items-center gap-[12px] rounded-[100px] border border-black/20 px-[16px] py-[11px]">
+        <div className="flex h-[44px] w-full max-w-[228px] items-center gap-[12px] rounded-[100px] border border-black/20 px-[16px] py-[11px] lg:max-w-[380px]">
           <Search size={20} className="shrink-0 text-[#a9a9a9]" strokeWidth={2} />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search Assignment"
+            placeholder="Search Name"
             className="w-full bg-transparent text-[14px] font-bold tracking-[-0.56px] text-[#303030] placeholder:font-bold placeholder:text-[#a9a9a9] focus:outline-none"
           />
         </div>

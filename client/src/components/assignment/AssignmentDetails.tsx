@@ -19,6 +19,8 @@ export type QuestionType = {
 
 /* Everything the parent needs to submit the assignment */
 export type AssignmentFormData = {
+  title: string;
+  subject: string;
   dueDate: string;
   questionTypes: QuestionType[];
   totalQuestions: number;
@@ -164,6 +166,8 @@ export function AssignmentDetails({
   const [openId, setOpenId] = useState<number | null>(null);
   const nextId = useRef(DEFAULT_QUESTION_TYPES.length);
 
+  const [title, setTitle] = useState("");
+  const [subject, setSubject] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -184,6 +188,8 @@ export function AssignmentDetails({
 
   useEffect(() => {
     onChange?.({
+      title,
+      subject,
       dueDate,
       questionTypes,
       totalQuestions,
@@ -193,6 +199,8 @@ export function AssignmentDetails({
     });
   }, [
     onChange,
+    title,
+    subject,
     dueDate,
     questionTypes,
     totalQuestions,
@@ -321,6 +329,34 @@ export function AssignmentDetails({
           <p className="w-full text-center text-[16px] font-medium leading-[1.4] tracking-[-0.64px] text-[#303030]/60">
             Upload images of your preferred document/image
           </p>
+        </div>
+
+        {/* ── TITLE ── */}
+        <div className="flex w-full flex-col items-start gap-[8px]">
+          <label className="text-[16px] font-bold leading-[1.4] tracking-[-0.64px] text-[#303030]">
+            Title
+          </label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Quiz on Electricity"
+            className="h-[44px] w-full rounded-[100px] border-[1.25px] border-solid border-[#dadada] bg-transparent px-[16px] py-[11px] text-[16px] font-medium leading-[1.4] tracking-[-0.64px] text-[#303030] placeholder:text-[#a9a9a9] focus:outline-none"
+          />
+        </div>
+
+        {/* ── SUBJECT ── */}
+        <div className="flex w-full flex-col items-start gap-[8px]">
+          <label className="text-[16px] font-bold leading-[1.4] tracking-[-0.64px] text-[#303030]">
+            Subject
+          </label>
+          <input
+            type="text"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            placeholder="e.g. Physics"
+            className="h-[44px] w-full rounded-[100px] border-[1.25px] border-solid border-[#dadada] bg-transparent px-[16px] py-[11px] text-[16px] font-medium leading-[1.4] tracking-[-0.64px] text-[#303030] placeholder:text-[#a9a9a9] focus:outline-none"
+          />
         </div>
 
         {/* ── DUE DATE ── */}

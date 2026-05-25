@@ -33,7 +33,6 @@ export default function Sidebar() {
   return (
     <aside
       className="
-<<<<<<< HEAD
         hidden
         lg:flex
         sticky
@@ -41,19 +40,12 @@ export default function Sidebar() {
         self-start
         w-[304px]
         min-w-[304px]
-=======
-        max-w-[304px]
->>>>>>> cb2ecc69bf17e798e640729b974b3c787b11865f
         h-[710px]
         p-6
         rounded-2xl
         bg-white
         shrink-0
-<<<<<<< HEAD
         flex-col
-=======
-        flex
->>>>>>> cb2ecc69bf17e798e640729b974b3c787b11865f
       "
       style={{
         boxShadow:

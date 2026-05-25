@@ -29,7 +29,20 @@ export function AssignmentForm() {
   async function submit() {
     const data = formRef.current;
 
-    if (!data || data.questionTypes.length === 0) {
+    if (!data) return;
+
+    const title = data.title.trim();
+    const subject = data.subject.trim();
+
+    if (title.length < 3) {
+      toast.error("Title must be at least 3 characters.");
+      return;
+    }
+    if (subject.length < 2) {
+      toast.error("Subject must be at least 2 characters.");
+      return;
+    }
+    if (data.questionTypes.length === 0) {
       toast.error("Add at least one question type.");
       return;
     }
@@ -44,14 +57,9 @@ export function AssignmentForm() {
 
     setSubmitting(true);
     try {
-      // Title isn't a field in this step, so derive one from the uploaded
-      // file name (backend requires >= 3 chars), else a sensible default.
-      const base = data.file?.name.replace(/\.[^.]+$/, "").trim();
-      const title = base && base.length >= 3 ? base : "Untitled Assignment";
-
       const res = await api.post("/assignments", {
         title,
-        subject: "General",
+        subject,
         dueDate: data.dueDate,
         sourceText: "",
         config: {
