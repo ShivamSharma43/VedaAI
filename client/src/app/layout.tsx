@@ -1,14 +1,17 @@
+import type { Metadata } from "next";
+import { Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "react-hot-toast";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Topbar } from "@/components/layout/Topbar";
-import { Inter } from "next/font/google";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-bricolage",
+});
 
-export const metadata = {
-  title: "VedaAI",
-  description: "AI-powered assessment platform",
+export const metadata: Metadata = {
+  title: "VedaAI – AI Assessment Creator",
+  description:
+    "AI-powered assignment and assessment platform for educators",
 };
 
 export default function RootLayout({
@@ -17,17 +20,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body>
-        <div className="min-h-screen flex">
-          <Sidebar />
-          <div className="flex-1 ml-[260px] flex flex-col min-h-screen">
-            <Topbar title="Assignment" />
-            <main className="flex-1 px-6 pb-10">{children}</main>
-          </div>
-        </div>
-        <Toaster position="top-right" />
+    <html lang="en">
+      <body className={`${bricolage.variable} antialiased`}>
+        {children}
       </body>
     </html>
   );
 }
+

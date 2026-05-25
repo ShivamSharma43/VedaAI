@@ -1,26 +1,28 @@
 import type { Config } from "tailwindcss";
 
-export default {
+const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-bricolage)", "sans-serif"],
+        bricolage: ["var(--font-bricolage)", "sans-serif"],
+      },
       colors: {
         brand: {
-          50:  "#fff4ef",
-          100: "#ffe5d9",
-          500: "#ff5a1f",
-          600: "#ea4a14",
-          700: "#1a1a1a", // dark CTA
+          orange: "#E8440A",
+          dark: "#1A1A1A",
+          muted: "#6B6B6B",
+          subtle: "#9A9A9A",
+          bg: "#F5F5F5",
         },
-        ink: "#1f2937",
-        muted: "#6b7280",
-        line: "#ececec",
-        page: "#f5f5f5",
       },
-      fontFamily: {
-        sans: ['"Inter"', "system-ui", "sans-serif"],
+      borderRadius: {
+        "2xl": "16px",
       },
     },
   },
   plugins: [],
-} satisfies Config;
+};
+
+export default config;

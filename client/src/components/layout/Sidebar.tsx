@@ -1,111 +1,406 @@
-"use client";
-
+import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import {
-  LayoutGrid,
-  Users,
-  FileText,
-  BookOpen,
-  PieChart,
-  Settings,
-  Sparkles,
-  ChevronDown,
-} from "lucide-react";
-import clsx from "clsx";
 
-const NAV = [
-  { label: "Home", href: "/", icon: LayoutGrid },
-  { label: "My Groups", href: "/groups", icon: Users },
-  { label: "Assignments", href: "/assignments", icon: FileText },
-  { label: "AI Teacher's Toolkit", href: "/toolkit", icon: BookOpen },
-  { label: "My Library", href: "/library", icon: PieChart },
+const navItems = [
+  {
+    name: "Home",
+    icon: "/home-icon.png",
+    active: false,
+  },
+  {
+    name: "My Groups",
+    icon: "/groups-icon.png",
+    active: false,
+  },
+  {
+    name: "Assignments",
+    icon: "/assignment-icon.png",
+    active: true,
+  },
+  {
+    name: "AI Teacher’s Toolkit",
+    icon: "/toolkit-icon.png",
+    active: false,
+  },
+  {
+    name: "My Library",
+    icon: "/library-icon.png",
+    active: false,
+  },
 ];
 
-export function Sidebar() {
-  const pathname = usePathname();
-
+export default function Sidebar() {
   return (
-    <aside className="fixed inset-y-0 left-0 w-[260px] bg-white border-r border-line flex flex-col">
-      {/* Logo */}
-      <div className="px-6 pt-6 pb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#ff7a3d] to-[#ea4a14] flex items-center justify-center relative overflow-hidden">
-            <span className="text-white font-bold text-lg leading-none">V</span>
-            {/* subtle grid pattern overlay */}
+    <aside
+      className="
+        max-w-[304px]
+        h-[710px]
+        p-6
+        rounded-2xl
+        bg-white
+        shrink-0
+        flex
+      "
+      style={{
+        boxShadow:
+          "0 16px 48px 0 rgba(0,0,0,0.12), 0 32px 48px 0 rgba(0,0,0,0.20)",
+      }}
+    >
+      {/* INNER WRAPPER */}
+      <div
+        className="
+          w-full
+          h-[662px]
+          flex
+          flex-col
+        "
+      >
+        {/* ───────────────── TOP DIV ───────────────── */}
+        <div
+          className="
+            w-full
+            h-[426px]
+            flex
+            flex-col
+          "
+        >
+          {/* BRANDING FRAME */}
+          <div
+            className="
+              w-[251px]
+              h-[40px]
+              flex
+              items-center
+            "
+          >
+            {/* BRANDING CONTENT */}
             <div
-              className="absolute inset-0 opacity-30 pointer-events-none"
-              style={{
-                backgroundImage:
-                  "linear-gradient(to right, rgba(255,255,255,.4) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.4) 1px, transparent 1px)",
-                backgroundSize: "6px 6px",
-              }}
+              className="
+                w-[136px]
+                h-[40px]
+                flex
+                items-center
+              "
+            >
+              {/* LOGO */}
+              <div
+                className="
+                  w-[40px]
+                  h-[40px]
+                  relative
+                  shrink-0
+                "
+              >
+                <Image
+                  src="/veda-logo-icon.png"
+                  alt="VedaAI Logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+
+              {/* GAP */}
+              <div className="w-2 shrink-0" />
+
+              {/* TEXT */}
+              <div
+                className="
+                  w-[88px]
+                  h-[20px]
+                  flex
+                  items-center
+                  text-[#303030]
+                  text-[28px]
+                  font-bold
+                  leading-[20px]
+                  tracking-[-1.68px]
+                "
+                
+              >
+                VedaAI
+              </div>
+            </div>
+          </div>
+
+          {/* GAP = 56px */}
+          <div className="h-[56px] shrink-0" />
+
+          {/* CREATE ASSIGNMENT BUTTON */}
+          <Link
+            href="/create"
+            className="
+              block
+              w-[251px]
+              h-[42px]
+              relative
+              transition-transform
+              hover:scale-[1.1]
+              active:scale-[0.98]
+            "
+          >
+            <Image
+              src="/create-assignment-button.png"
+              alt="Create Assignment"
+              fill
+              className="object-contain"
             />
-          </div>
-          <span className="text-[22px] font-semibold tracking-tight">
-            VedaAI
-          </span>
-        </div>
-      </div>
+          </Link>
 
-      {/* Create Assignment CTA */}
-      <div className="px-5 mt-2">
-        <Link
-          href="/create"
-          className="group flex items-center justify-center gap-2 w-full h-11 rounded-full bg-[#1a1a1a] text-white text-sm font-medium ring-2 ring-[#ff5a1f]/80 ring-offset-2 ring-offset-white shadow-sm hover:bg-black transition"
-        >
-          <Sparkles size={16} className="text-white" />
-          Create Assignment
-        </Link>
-      </div>
+          {/* GAP = 56px */}
+          <div className="h-[56px] shrink-0" />
 
-      {/* Nav */}
-      <nav className="px-3 mt-6 flex-1 overflow-y-auto">
-        <ul className="space-y-1">
-          {NAV.map(({ label, href, icon: Icon }) => {
-            const active =
-              href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(href) || (label === "Assignments" && pathname.startsWith("/assignment"));
-            return (
-              <li key={href}>
-                <Link
-                  href={href}
-                  className={clsx(
-                    "flex items-center gap-3 px-3 h-10 rounded-lg text-[14px] transition",
-                    active
-                      ? "bg-[#f3f3f3] text-ink font-semibold"
-                      : "text-muted hover:bg-[#f7f7f7] hover:text-ink"
-                  )}
+          {/* NAVIGATION SECTION */}
+          <div
+            className="
+              w-[254px]
+              flex
+              flex-col
+              gap-2
+            "
+          >
+            {navItems.map((item) => (
+              <div
+                key={item.name}
+                className={`
+                  w-[254px]
+                  h-[40px]
+                  px-3
+                  py-[9px]
+                  flex
+                  items-center
+                  rounded-xl
+                  ${
+                    item.active
+                      ? "bg-[#F3F3F3]"
+                      : "bg-transparent"
+                  }
+                `}
+              >
+                {/* ICON */}
+                <div
+                  className="
+                    w-[20px]
+                    h-[20px]
+                    relative
+                    shrink-0
+                  "
                 >
-                  <Icon size={18} strokeWidth={active ? 2.2 : 1.8} />
-                  {label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+                  <Image
+                    src={item.icon}
+                    alt={item.name}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
 
-      {/* Settings + School card */}
-      <div className="px-3 pb-5">
-        <Link
-          href="/settings"
-          className="flex items-center gap-3 px-3 h-10 rounded-lg text-[14px] text-muted hover:bg-[#f7f7f7] hover:text-ink transition"
-        >
-          <Settings size={18} strokeWidth={1.8} />
-          Settings
-        </Link>
+                {/* GAP */}
+                <div className="w-2 shrink-0" />
 
-        <div className="mt-3 mx-1 flex items-center gap-3 p-2 rounded-xl hover:bg-[#f7f7f7] cursor-pointer transition">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-200 to-amber-400 flex items-center justify-center text-base shrink-0">
-            👩‍🏫
+                {/* CONTENT */}
+                <div
+                  className={`
+                    w-[202px]
+                    h-[22px]
+                    flex
+                    flex-col
+                    justify-center
+                    flex-1
+                    overflow-hidden
+                    whitespace-nowrap
+                    text-ellipsis
+                    text-[16px]
+                    leading-[140%]
+                    tracking-[-0.64px]
+                    ${
+                      item.active
+                        ? "text-[#303030] font-bold"
+                        : "text-[rgba(94,94,94,0.80)] font-normal"
+                    }
+                  `}
+                  
+                >
+                  {item.name}
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-semibold text-ink truncate">
-              Delhi Public School
-            </p>
-            <p className="text-[11px] text-muted truncate">Bokaro Steel City</p>
+        </div>
+
+        {/* GAP = 100px */}
+        <div className="h-[110px] shrink-0" />
+
+        {/* ───────────────── BOTTOM DIV ───────────────── */}
+        <div
+          className="
+            w-full
+            h-[126px]
+            flex
+            flex-col
+          "
+        >
+          {/* SETTINGS FRAME */}
+          <div
+            className="
+              w-full
+              h-[38px]
+              px-3
+              py-2
+              flex
+              items-center
+            "
+          >
+            <div
+              className="
+                w-[204px]
+                h-[22px]
+                flex
+                items-center
+              "
+            >
+              {/* ICON */}
+              <div
+                className="
+                  w-[20px]
+                  h-[22px]
+                  relative
+                  shrink-0
+                "
+              >
+                <Image
+                  src="/setting-icon.png"
+                  alt="Settings"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+
+              {/* GAP */}
+              <div className="w-2 shrink-0" />
+
+              {/* TEXT */}
+              <div
+                className="
+                  w-[204px]
+                  h-[22px]
+                  overflow-hidden
+                  whitespace-nowrap
+                  text-ellipsis
+                  text-[rgba(94,94,94,0.80)]
+                  text-[16px]
+                  font-normal
+                  leading-[140%]
+                  tracking-[-0.64px]
+                "
+                
+              >
+                Settings
+              </div>
+            </div>
+          </div>
+
+          {/* GAP */}
+          <div className="h-2 shrink-0" />
+
+          {/* SCHOOL CARD */}
+          <div
+            className="
+              w-[256px]
+              h-[80px]
+              rounded-2xl
+              bg-[#F0F0F0]
+              p-3
+              flex
+              items-center
+            "
+          >
+            <div
+              className="
+                w-[232px]
+                h-[56px]
+                flex
+                items-center
+              "
+            >
+              {/* AVATAR */}
+              <div
+                className="
+                  w-[59px]
+                  h-[56px]
+                  rounded-[59px]
+                  overflow-hidden
+                  relative
+                  shrink-0
+                "
+              >
+                <Image
+                  src="/school-avatar.jpg"
+                  alt="School Avatar"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+
+              {/* GAP */}
+              <div className="w-2 shrink-0" />
+
+              {/* CONTENT */}
+              <div
+                className="
+                  w-[165px]
+                  h-[44px]
+                  flex
+                  flex-col
+                  items-start
+                  flex-1
+                "
+              >
+                {/* SCHOOL NAME */}
+                <div
+                  className="
+                    w-[165px]
+                    h-[22px]
+                    flex
+                    flex-col
+                    justify-center
+                    self-stretch
+                    overflow-hidden
+                    whitespace-nowrap
+                    text-ellipsis
+                    text-[#303030]
+                    text-[16px]
+                    font-bold
+                    leading-[140%]
+                    tracking-[-0.64px]
+                  "
+                  
+                >
+                  Delhi Public School
+                </div>
+
+                {/* PLACE */}
+                <div
+                  className="
+                    w-[165px]
+                    h-[22px]
+                    flex
+                    flex-col
+                    justify-center
+                    self-stretch
+                    overflow-hidden
+                    whitespace-nowrap
+                    text-ellipsis
+                    text-[#5E5E5E]
+                    text-[14px]
+                    font-normal
+                    leading-[140%]
+                    tracking-[-0.56px]
+                  "
+                  
+                >
+                  Bokaro Steel City
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
