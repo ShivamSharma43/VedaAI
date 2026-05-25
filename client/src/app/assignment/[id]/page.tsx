@@ -14,7 +14,7 @@ import toast from "react-hot-toast";
 
 export default function AssignmentPage() {
   const { id } = useParams<{ id: string }>();
-  const { current, progress, status, setCurrent, setStatus } =
+  const { current, progress, status, setCurrent, setStatus, setProgress } =
     useAssignmentStore();
   useAssignmentSocket(id);
 
@@ -38,7 +38,7 @@ export default function AssignmentPage() {
       });
 
       const contentType = res.headers["content-type"] ?? "";
-      if (!contentType.includes("application/pdf")) {
+      if (!String(contentType).includes("application/pdf")) {
         toast.error("Download failed or invalid format");
         return;
       }
