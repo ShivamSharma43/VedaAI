@@ -1,5 +1,5 @@
 import { Worker } from "bullmq";
-import { redisConnection } from "../config/redis";
+import { redis } from "../lib/redis";
 import { Assignment } from "../models/Assignment";
 import { buildPrompt } from "../services/promptService";
 import { generatePaper } from "../services/aiService";
@@ -46,7 +46,9 @@ export function startGenerationWorker() {
 
       return { ok: true };
     },
-    { connection: redisConnection, concurrency: 2 }
+    // Reuse the shared client; BullMQ duplicates it internally for the
+    // worker's blocking connection.
+    { connection: redis, concurrency: 2 }
   );
 
   worker.on("failed", async (job, err) => {
