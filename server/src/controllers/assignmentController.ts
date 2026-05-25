@@ -29,6 +29,14 @@ export async function list(_req: Request, res: Response, next: NextFunction) {
   }
 }
 
+export async function remove(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json(await svc.deleteAssignment(req.params.id));
+  } catch (e) {
+    next(e);
+  }
+}
+
 export async function regenerate(
   req: Request,
   res: Response,

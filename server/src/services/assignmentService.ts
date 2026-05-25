@@ -31,6 +31,29 @@ export async function listAssignments() {
   return Assignment.find().sort({ createdAt: -1 }).limit(50);
 }
 
+export async function deleteAssignment(id: string) {
+  const doc = await Assignment.findById(id);
+  if (!doc) throw new AppError(404, "Assignment not found");
+
+  // Best-effort: drop the generation job from Redis so we don't leave
+  // orphaned queue data. The job may already be completed/removed or actively
+  // locked — none of which should block deleting the document.
+  if (doc.jobId) {
+    try {
+      const job = await generationQueue.getJob(doc.jobId);
+      if (job) await job.remove();
+    } catch (err) {
+      console.warn(
+        `Could not remove job ${doc.jobId}:`,
+        (err as Error).message
+      );
+    }
+  }
+
+  await doc.deleteOne();
+  return { ok: true, id };
+}
+
 export async function regenerate(id: string) {
   const doc = await getAssignment(id);
   doc.status = "pending";

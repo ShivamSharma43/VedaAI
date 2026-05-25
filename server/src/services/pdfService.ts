@@ -1,20 +1,36 @@
-import puppeteer from "puppeteer";
-
 export async function generatePdfBuffer(assignment: any): Promise<Buffer> {
   const html = renderHtml(assignment);
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: "networkidle0" });
-  const pdf = await page.pdf({
-    format: "A4",
-    printBackground: true,
-    margin: { top: "20mm", bottom: "20mm", left: "18mm", right: "18mm" },
-  });
-  await browser.close();
-  return Buffer.from(pdf);
+  const isProd = process.env.NODE_ENV === "production";
+
+  let browser: any;
+  if (isProd) {
+    const puppeteer = (await import("puppeteer-core")).default;
+    const chromium = (await import("@sparticuz/chromium")).default;
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    });
+  } else {
+    const puppeteer = (await import("puppeteer")).default;
+    browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+  }
+
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: { top: "20mm", bottom: "20mm", left: "18mm", right: "18mm" },
+    });
+    return Buffer.from(pdf);
+  } finally {
+    await browser.close();
+  }
 }
 
 function badge(d: string): string {

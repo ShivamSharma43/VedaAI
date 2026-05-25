@@ -9,7 +9,6 @@ import { Loader } from "@/components/common/Loader";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import Sidebar from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
-import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { FileDown, RefreshCcw } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -33,15 +32,35 @@ export default function AssignmentPage() {
   }, [id, setCurrent, setStatus]);
 
   async function download() {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/assignments/${id}/pdf`
-    );
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${current?.title ?? "paper"}.pdf`;
-    a.click();
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/assignments/${id}/pdf`
+      );
+
+      const contentType = res.headers.get("content-type") ?? "";
+      if (!res.ok || !contentType.includes("application/pdf")) {
+        let message = `Download failed (${res.status})`;
+        try {
+          const body = await res.json();
+          if (body?.error) message = body.error;
+        } catch {
+          // response wasn't JSON; keep the status-based message
+        }
+        toast.error(message);
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${current?.title ?? "paper"}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download failed", err);
+      toast.error("Couldn't download PDF. Please try again.");
+    }
   }
 
   async function regenerate() {
@@ -69,7 +88,7 @@ export default function AssignmentPage() {
           <Topbar />
 
           {/* PAGE CONTENT */}
-          <main className="flex-1 px-4 pb-[170px] pt-3 lg:px-6 lg:pb-6">
+          <main className="flex-1 px-4 pb-6 pt-3 lg:px-6">
             {!current ? (
               <div className="flex flex-1 items-center justify-center py-20">
                 <Loader />
@@ -151,11 +170,6 @@ export default function AssignmentPage() {
               </div>
             )}
           </main>
-
-          {/* MOBILE BOTTOM NAV */}
-          <div className="lg:hidden">
-            <MobileBottomNav />
-          </div>
         </div>
       </div>
     </main>
