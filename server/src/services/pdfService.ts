@@ -1,9 +1,17 @@
 export async function generatePdfBuffer(assignment: any): Promise<Buffer> {
   const html = renderHtml(assignment);
-  const isProd = process.env.NODE_ENV === "production";
+
+  // Use the bundled, serverless-friendly Chromium on Render / hosted envs; full
+  // puppeteer locally (it ships a Chromium that runs on the dev machine).
+  // NOTE: this is decoupled from NODE_ENV because NODE_ENV stays "development"
+  // on the host so the in-process generation worker still runs.
+  const useBundledChromium =
+    process.env.RENDER === "true" ||
+    process.env.PDF_CHROMIUM === "true" ||
+    process.env.NODE_ENV === "production";
 
   let browser: any;
-  if (isProd) {
+  if (useBundledChromium) {
     const puppeteer = (await import("puppeteer-core")).default;
     const chromium = (await import("@sparticuz/chromium")).default;
     browser = await puppeteer.launch({

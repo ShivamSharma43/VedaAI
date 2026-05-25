@@ -33,39 +33,43 @@ export default function AssignmentPage() {
 
   async function download() {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/assignments/${id}/pdf`
-      );
+      const res = await api.get(`/assignments/${id}/pdf`, {
+        responseType: "blob",
+      });
 
-      const contentType = res.headers.get("content-type") ?? "";
-      if (!res.ok || !contentType.includes("application/pdf")) {
-        let message = `Download failed (${res.status})`;
-        try {
-          const body = await res.json();
-          if (body?.error) message = body.error;
-        } catch {
-          // response wasn't JSON; keep the status-based message
-        }
-        toast.error(message);
+      const contentType = res.headers["content-type"] ?? "";
+      if (!contentType.includes("application/pdf")) {
+        toast.error("Download failed or invalid format");
         return;
       }
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(res.data);
       const a = document.createElement("a");
       a.href = url;
       a.download = `${current?.title ?? "paper"}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Download failed", err);
-      toast.error("Couldn't download PDF. Please try again.");
+      let message = "Couldn't download PDF. Please try again.";
+      if (err.response?.data instanceof Blob) {
+         try {
+           const text = await err.response.data.text();
+           const json = JSON.parse(text);
+           if (json.error) message = json.error;
+         } catch {
+           // Ignore
+         }
+      }
+      toast.error(message);
     }
   }
 
   async function regenerate() {
     try {
-      await api.post(`/assignments/${id}/regenerate`);
+      const { data } = await api.post(`/assignments/${id}/regenerate`);
+      setCurrent(data);
+      setProgress(0);
       setStatus("started");
       toast("Regenerating…");
     } catch (err) {

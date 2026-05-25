@@ -11,30 +11,48 @@ export function useAssignmentSocket(assignmentId: string | null) {
   useEffect(() => {
     if (!assignmentId) return;
     const socket = getSocket();
-    socket.emit("subscribe", assignmentId);
 
-    socket.on("generation-started", () => setStatus("started"));
-    socket.on("generation-progress", (p: { progress: number }) => {
+    const handleConnect = () => {
+      socket.emit("subscribe", assignmentId);
+    };
+
+    if (socket.connected) {
+      handleConnect();
+    }
+    socket.on("connect", handleConnect);
+
+    const onStarted = () => setStatus("started");
+    const onProgress = (p: { progress: number }) => {
       setStatus("progress");
       setProgress(p.progress);
-    });
-    socket.on("generation-completed", async () => {
+    };
+    const onCompleted = async () => {
       setStatus("completed");
       setProgress(100);
-      const { data } = await api.get(`/assignments/${assignmentId}`);
-      setCurrent(data);
-      toast.success("Paper generated!");
-    });
-    socket.on("generation-failed", (p: { error: string }) => {
+      try {
+        const { data } = await api.get(`/assignments/${assignmentId}`);
+        setCurrent(data);
+        toast.success("Paper generated!");
+      } catch (err) {
+        console.error("Failed to fetch generated assignment", err);
+      }
+    };
+    const onFailed = (p: { error: string }) => {
       setStatus("failed");
       toast.error(p.error ?? "Generation failed");
-    });
+    };
+
+    socket.on("generation-started", onStarted);
+    socket.on("generation-progress", onProgress);
+    socket.on("generation-completed", onCompleted);
+    socket.on("generation-failed", onFailed);
 
     return () => {
-      socket.off("generation-started");
-      socket.off("generation-progress");
-      socket.off("generation-completed");
-      socket.off("generation-failed");
+      socket.off("connect", handleConnect);
+      socket.off("generation-started", onStarted);
+      socket.off("generation-progress", onProgress);
+      socket.off("generation-completed", onCompleted);
+      socket.off("generation-failed", onFailed);
     };
   }, [assignmentId, setProgress, setStatus, setCurrent]);
 }
