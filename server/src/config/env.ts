@@ -1,6 +1,14 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+// Allowed browser origins. Supports a comma-separated list and strips any
+// trailing slash(es) — an Origin header never has one, so a slash in
+// CLIENT_URL ("...vercel.app/") would break CORS matching.
+const clientUrls = (process.env.CLIENT_URL ?? "http://localhost:3000")
+  .split(",")
+  .map((s) => s.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+
 export const env = {
   port: Number(process.env.PORT ?? 4000),
   mongoUri: process.env.MONGO_URI ?? "mongodb://localhost:27017/assessments",
@@ -26,6 +34,7 @@ export const env = {
     process.env.GROQ_MODEL ??
     "llama-3.3-70b-versatile",
 },
-  clientUrl: process.env.CLIENT_URL ?? "http://localhost:3000",
+  clientUrl: clientUrls[0],
+  clientUrls,
   nodeEnv: process.env.NODE_ENV ?? "development",
 };
