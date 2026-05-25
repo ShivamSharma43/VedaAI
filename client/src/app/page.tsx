@@ -6,6 +6,7 @@ import Sidebar from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 
 import { api } from "@/lib/api";
+<<<<<<< HEAD
 import type { Assignment } from "@/types";
 import EmptyAssignmentsState from "@/components/layout/EmptyAssignmentsState";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
@@ -13,6 +14,13 @@ import { AssignmentList } from "@/components/assignment/AssignmentList";
 
 export default function AssignmentsPage() {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+=======
+import EmptyAssignmentsState from "@/components/layout/EmptyAssignmentsState";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
+
+export default function AssignmentsPage() {
+  const [assignments, setAssignments] = useState([]);
+>>>>>>> cb2ecc69bf17e798e640729b974b3c787b11865f
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,6 +39,7 @@ export default function AssignmentsPage() {
     fetchAssignments();
   }, []);
 
+<<<<<<< HEAD
   function handleDelete(id: string) {
     // Optimistic removal; persists once the backend exposes a DELETE route.
     setAssignments((prev) => prev.filter((a) => a._id !== id));
@@ -39,6 +48,8 @@ export default function AssignmentsPage() {
       .catch((err) => console.error("Failed to delete assignment", err));
   }
 
+=======
+>>>>>>> cb2ecc69bf17e798e640729b974b3c787b11865f
   return (
     <main
       className="
@@ -50,7 +61,13 @@ export default function AssignmentsPage() {
     >
       <div className="flex w-full gap-3">
         {/* SIDEBAR */}
+<<<<<<< HEAD
         <Sidebar />
+=======
+       <div className="hidden lg:block">
+   <Sidebar />
+</div>
+>>>>>>> cb2ecc69bf17e798e640729b974b3c787b11865f
 
         {/* RIGHT SECTION */}
         <div className="flex flex-1 flex-col">
@@ -58,6 +75,7 @@ export default function AssignmentsPage() {
           <Topbar />
 
           {/* MAIN CONTENT */}
+<<<<<<< HEAD
           <main className="flex flex-1 flex-col">
             {loading ? (
               <div className="flex flex-1 items-center justify-center">
@@ -73,6 +91,17 @@ export default function AssignmentsPage() {
                   assignments={assignments}
                   onDelete={handleDelete}
                 />
+=======
+          <main className="flex flex-1 items-center justify-center">
+            {loading ? (
+              <div>Loading...</div>
+            ) : assignments.length === 0 ? (
+              <EmptyAssignmentsState />
+            ) : (
+              <div>
+                {/* Assignment Cards will come here */}
+                Assignments Found
+>>>>>>> cb2ecc69bf17e798e640729b974b3c787b11865f
               </div>
             )}
           </main>
