@@ -33,13 +33,19 @@ export default function Sidebar() {
   return (
     <aside
       className="
-        max-w-[304px]
+        hidden
+        lg:flex
+        sticky
+        top-3
+        self-start
+        w-[304px]
+        min-w-[304px]
         h-[710px]
         p-6
         rounded-2xl
         bg-white
         shrink-0
-        flex
+        flex-col
       "
       style={{
         boxShadow:

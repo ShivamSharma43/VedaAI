@@ -1,171 +1,235 @@
 "use client";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Input } from "../common/Input";
-import { Button } from "../common/Button";
-import { QuestionConfig } from "./QuestionConfig";
-import { FileUpload } from "./FileUpload";
-import { api } from "@/lib/api";
+
+import Image from "next/image";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
 
-const schema = z
-  .object({
-    title: z.string().min(3, "Title is required"),
-    subject: z.string().min(2, "Subject is required"),
-    dueDate: z.string().min(1, "Due date required"),
-    questionTypes: z.array(z.string()).min(1, "Pick at least one type"),
-    numberOfQuestions: z.coerce.number().int().positive().max(100),
-    totalMarks: z.coerce.number().int().positive().max(500),
-    easy: z.coerce.number().min(0).max(100),
-    medium: z.coerce.number().min(0).max(100),
-    hard: z.coerce.number().min(0).max(100),
-    instructions: z.string().optional(),
-  })
-  .refine((d) => d.easy + d.medium + d.hard === 100, {
-    message: "Difficulty must total 100%",
-    path: ["easy"],
-  });
-
-type FormVals = z.infer<typeof schema>;
+import { api } from "@/lib/api";
+import { useAssignmentStore } from "@/store/assignmentStore";
+import { AssignmentDetails, type AssignmentFormData } from "./AssignmentDetails";
+import { FormNav } from "./FormNav";
 
 export function AssignmentForm() {
   const router = useRouter();
-  const [sourceText, setSourceText] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { setCurrent, setStatus } = useAssignmentStore();
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<FormVals>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      questionTypes: ["MCQ", "Theory"],
-      numberOfQuestions: 10,
-      totalMarks: 50,
-      easy: 40,
-      medium: 40,
-      hard: 20,
-    },
-  });
+  const formRef = useRef<AssignmentFormData | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  async function onSubmit(v: FormVals) {
-    setLoading(true);
+  const handleFormChange = useCallback((data: AssignmentFormData) => {
+    formRef.current = data;
+  }, []);
+
+  function goPrevious() {
+    router.push("/");
+  }
+
+  async function submit() {
+    const data = formRef.current;
+
+    if (!data || data.questionTypes.length === 0) {
+      toast.error("Add at least one question type.");
+      return;
+    }
+    if (!data.dueDate) {
+      toast.error("Please select a due date.");
+      return;
+    }
+    if (data.totalQuestions <= 0 || data.totalMarks <= 0) {
+      toast.error("Set the number of questions and marks.");
+      return;
+    }
+
+    setSubmitting(true);
     try {
-      const { data } = await api.post("/assignments", {
-        title: v.title,
-        subject: v.subject,
-        dueDate: v.dueDate,
-        sourceText,
+      // Title isn't a field in this step, so derive one from the uploaded
+      // file name (backend requires >= 3 chars), else a sensible default.
+      const base = data.file?.name.replace(/\.[^.]+$/, "").trim();
+      const title = base && base.length >= 3 ? base : "Untitled Assignment";
+
+      const res = await api.post("/assignments", {
+        title,
+        subject: "General",
+        dueDate: data.dueDate,
+        sourceText: "",
         config: {
-          questionTypes: v.questionTypes,
-          numberOfQuestions: v.numberOfQuestions,
-          totalMarks: v.totalMarks,
-          difficulty: { easy: v.easy, medium: v.medium, hard: v.hard },
-          instructions: v.instructions ?? "",
+          questionTypes: data.questionTypes.map((q) => q.label),
+          numberOfQuestions: data.totalQuestions,
+          totalMarks: data.totalMarks,
+          difficulty: { easy: 40, medium: 40, hard: 20 },
+          instructions: data.additionalInfo || "",
         },
       });
-      toast.success("Assignment created. Generating...");
-      router.push(`/assignment/${data._id}`);
-    } catch (e: any) {
-      toast.error(e?.response?.data?.error ?? "Failed to create");
-    } finally {
-      setLoading(false);
+
+      const id = res.data?._id ?? res.data?.id;
+      if (!id) throw new Error("No assignment id returned");
+
+      setCurrent(res.data);
+      setStatus("started");
+      router.push(`/assignment/${id}`);
+    } catch (err) {
+      console.error("Failed to create assignment", err);
+      toast.error("Failed to generate question paper. Please try again.");
+      setSubmitting(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid md:grid-cols-2 gap-5">
-        <Input
-          label="Assignment Title"
-          placeholder="e.g. DBMS Mid-term"
-          {...register("title")}
-          error={errors.title?.message}
-        />
-        <Input
-          label="Subject"
-          placeholder="e.g. Database Systems"
-          {...register("subject")}
-          error={errors.subject?.message}
-        />
-        <Input
-          type="date"
-          label="Due Date"
-          {...register("dueDate")}
-          error={errors.dueDate?.message}
-        />
-        <Input
-          type="number"
-          label="Number of Questions"
-          {...register("numberOfQuestions")}
-          error={errors.numberOfQuestions?.message}
-          min={1}
-        />
-        <Input
-          type="number"
-          label="Total Marks"
-          {...register("totalMarks")}
-          error={errors.totalMarks?.message}
-          min={1}
-        />
+    <>
+      {/* ───────────────── MOBILE HEADER (back + centered title) ───────────────── */}
+      <div className="relative mt-[6px] flex h-[48px] w-full items-center lg:hidden">
+        <button
+          type="button"
+          aria-label="Back"
+          onClick={goPrevious}
+          className="flex size-[48px] shrink-0 items-center justify-center rounded-full bg-white"
+        >
+          <ArrowLeft size={24} className="text-[#303030]" strokeWidth={2} />
+        </button>
+        <span className="absolute left-1/2 -translate-x-1/2 text-[16px] font-bold leading-[1.4] tracking-[-0.64px] text-[#303030]">
+          Create Assignment
+        </span>
       </div>
 
-      <div>
-        <span className="block mb-2 text-sm font-medium text-slate-700">
-          Question Types
-        </span>
-        <Controller
-          control={control}
-          name="questionTypes"
-          render={({ field }) => (
-            <QuestionConfig selected={field.value} onChange={field.onChange} />
-          )}
-        />
-        {errors.questionTypes && (
-          <p className="mt-1 text-xs text-red-600">
-            {errors.questionTypes.message as string}
-          </p>
-        )}
-      </div>
+      {/* ───────────────── PAGE HEADING ───────────────── */}
+      <div
+        className="
+          hidden
+          w-full
+          h-[66px]
+          lg:flex
+          items-start
+          mt-1
+        "
+      >
+        {/* INNER CONTENT */}
+        <div
+          className="
+            flex
+            items-start
+            pl-2
+            pt-2
+            pb-2
+          "
+        >
+          {/* GREEN DOT */}
+          <div
+            className="
+              relative
+              w-[12px]
+              h-[12px]
+              shrink-0
+              mt-[8px]
+            "
+          >
+            <Image
+              src="/green-dot.png"
+              alt="Active Step"
+              fill
+              className="object-contain"
+            />
+          </div>
 
-      <div>
-        <span className="block mb-2 text-sm font-medium text-slate-700">
-          Difficulty Distribution (%)
-        </span>
-        <div className="grid grid-cols-3 gap-4">
-          <Input type="number" label="Easy" {...register("easy")} />
-          <Input type="number" label="Medium" {...register("medium")} />
-          <Input type="number" label="Hard" {...register("hard")} />
+          {/* GAP */}
+          <div className="w-3 shrink-0" />
+
+          {/* TEXT BLOCK */}
+          <div className="flex flex-col">
+            {/* TITLE */}
+            <div
+              className="
+                w-[174px]
+                h-[28px]
+                text-[#303030]
+                text-[20px]
+                font-bold
+                leading-[140%]
+                tracking-[-0.8px]
+              "
+              
+            >
+              Create Assignment
+            </div>
+
+            {/* GAP */}
+            <div className="h-[2px]" />
+
+            {/* SUBTITLE */}
+            <div
+              className="
+                w-[261px]
+                h-[20px]
+                text-[14px]
+                font-normal
+                leading-[140%]
+                tracking-[-0.56px]
+                text-[rgba(94,94,94,0.55)]
+              "
+              
+            >
+              Set up a new assignment for your students
+            </div>
+          </div>
         </div>
-        {errors.easy && (
-          <p className="mt-1 text-xs text-red-600">{errors.easy.message}</p>
-        )}
       </div>
+      {/* GAP */}
+<div className="h-[24px] lg:h-[32px]" />
 
-      <FileUpload onText={setSourceText} />
+{/* PROGRESS LINES */}
+<div className="flex items-center w-full">
+  {/* ACTIVE LINE */}
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="407"
+    height="5"
+    viewBox="0 0 407 5"
+    fill="none"
+    className="w-full max-w-[402px] flex-1"
+  >
+    <path
+      d="M2.5 2.5H404"
+      stroke="#5E5E5E"
+      strokeWidth="5"
+      strokeLinecap="round"
+    />
+  </svg>
 
-      <div>
-        <span className="block mb-1.5 text-sm font-medium text-slate-700">
-          Additional Instructions
-        </span>
-        <textarea
-          {...register("instructions")}
-          rows={3}
-          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none"
-          placeholder="Focus on normalization, indexing, transactions..."
-        />
-      </div>
+  {/* GAP */}
+  <div className="w-[12px] shrink-0" />
 
-      <div className="flex justify-end">
-        <Button type="submit" disabled={loading}>
-          {loading ? "Creating..." : "Generate Paper →"}
-        </Button>
-      </div>
-    </form>
+  {/* INACTIVE LINE */}
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="407"
+    height="5"
+    viewBox="0 0 407 5"
+    fill="none"
+    className="w-full max-w-[402px] flex-1"
+  >
+    <path
+      d="M2.5 2.5H404"
+      stroke="#DADADA"
+      strokeWidth="5"
+      strokeLinecap="round"
+    />
+  </svg>
+</div>
+
+{/* GAP */}
+<div className="h-[24px] lg:h-[32px]" />
+
+
+
+{/* ───────────────── ASSIGNMENT DETAILS CARD ───────────────── */}
+<AssignmentDetails onChange={handleFormChange} />
+
+{/* GAP = 24px */}
+<div className="h-[24px]" />
+
+{/* ───────────────── STEP NAVIGATION ───────────────── */}
+<FormNav onPrevious={goPrevious} onNext={submit} loading={submitting} />
+    </>
   );
 }

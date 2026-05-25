@@ -1,17 +1,41 @@
+import Sidebar from "@/components/layout/Sidebar";
+import { Topbar } from "@/components/layout/Topbar";
+
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
+
 import { AssignmentForm } from "@/components/assignment/AssignmentForm";
 
 export default function CreatePage() {
   return (
-    <div className="max-w-3xl mx-auto">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold">Create Assignment</h1>
-        <p className="text-slate-500 mt-1">
-          Configure your paper — AI handles the rest.
-        </p>
-      </header>
-      <div className="card p-8">
-        <AssignmentForm />
+    <main
+      className="
+        min-h-screen
+        w-full
+        bg-transparent
+        p-3
+      "
+    >
+      {/* MAIN LAYOUT */}
+      <div className="flex w-full gap-3">
+        {/* SIDEBAR */}
+        <Sidebar />
+
+        {/* RIGHT SECTION */}
+        <div className="flex flex-1 flex-col">
+          {/* TOPBAR */}
+          <Topbar />
+
+          {/* PAGE CONTENT */}
+          <main className="flex-1 px-4 pb-[170px] lg:px-6 lg:pb-0">
+            <AssignmentForm />
+          </main>
+        </div>
       </div>
-    </div>
+
+      {/* MOBILE BOTTOM NAV */}
+      <div className="lg:hidden">
+        <MobileBottomNav />
+      </div>
+    </main>
   );
 }

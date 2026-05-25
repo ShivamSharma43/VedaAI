@@ -6,11 +6,13 @@ import Sidebar from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 
 import { api } from "@/lib/api";
+import type { Assignment } from "@/types";
 import EmptyAssignmentsState from "@/components/layout/EmptyAssignmentsState";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
+import { AssignmentList } from "@/components/assignment/AssignmentList";
 
 export default function AssignmentsPage() {
-  const [assignments, setAssignments] = useState([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,6 +31,14 @@ export default function AssignmentsPage() {
     fetchAssignments();
   }, []);
 
+  function handleDelete(id: string) {
+    // Optimistic removal; persists once the backend exposes a DELETE route.
+    setAssignments((prev) => prev.filter((a) => a._id !== id));
+    api
+      .delete(`/assignments/${id}`)
+      .catch((err) => console.error("Failed to delete assignment", err));
+  }
+
   return (
     <main
       className="
@@ -40,9 +50,7 @@ export default function AssignmentsPage() {
     >
       <div className="flex w-full gap-3">
         {/* SIDEBAR */}
-       <div className="hidden lg:block">
-   <Sidebar />
-</div>
+        <Sidebar />
 
         {/* RIGHT SECTION */}
         <div className="flex flex-1 flex-col">
@@ -50,15 +58,21 @@ export default function AssignmentsPage() {
           <Topbar />
 
           {/* MAIN CONTENT */}
-          <main className="flex flex-1 items-center justify-center">
+          <main className="flex flex-1 flex-col">
             {loading ? (
-              <div>Loading...</div>
+              <div className="flex flex-1 items-center justify-center">
+                Loading...
+              </div>
             ) : assignments.length === 0 ? (
-              <EmptyAssignmentsState />
+              <div className="flex flex-1 items-center justify-center">
+                <EmptyAssignmentsState />
+              </div>
             ) : (
-              <div>
-                {/* Assignment Cards will come here */}
-                Assignments Found
+              <div className="px-4 pb-[170px] pt-2 lg:px-6 lg:pb-6">
+                <AssignmentList
+                  assignments={assignments}
+                  onDelete={handleDelete}
+                />
               </div>
             )}
           </main>
